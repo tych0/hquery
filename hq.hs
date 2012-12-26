@@ -17,14 +17,13 @@ data AttrSelT = AttrSel String (Maybe AttrMod) deriving Show
 data CssSel =
   Id String (Maybe AttrSelT) |
   Name String (Maybe AttrSelT) |
-  Class String (Maybe AttrSelT)
-  --Attr String String           |  -- [first=second], special cases for name, id?
-  --Elem String (Maybe AttrSelT) |
-  --Star (Maybe AttrSelT)
+  Class String (Maybe AttrSelT) |
+  Attr String String (Maybe AttrSelT) |  -- [first=second], special cases for name, id?
+  Elem String (Maybe AttrSelT) |
+  Star (Maybe AttrSelT)
   deriving Show
-  -- Colon?
 
-def = emptyDef{identStart = letter
+def = emptyDef{ identStart = letter
               , identLetter = alphaNum
               }
 
@@ -34,14 +33,6 @@ TokenParser{ parens = m_parens
            , reserved = m_reserved
            , semiSep1 = m_semiSep1
            , whiteSpace = m_whiteSpace } = makeTokenParser def
-
-{-
-cssSelParser :: Parser CssSel
-cssSelParser = buildExpressionParser table term <?> "expression"
-table = [ [Prefix (m_reservedOp "." >> Class)]
-        , [Prefix (m_reservedOp "#" >> Id)]
-        ]
--}
 
 attrModParser :: Parser (Maybe AttrMod)
 attrModParser = optionMaybe modParser
@@ -75,6 +66,22 @@ cssSelParser = m_whiteSpace >> selParser
                        ; attrSel <- attrSelParser
                        ; return (Id name attrSel)
                        }
+                <|> do { m_reservedOp "["
+                       ; attr <- m_identifier
+                       ; m_reservedOp "="
+                       ; value <- m_identifier
+                       ; m_reservedOp "]"
+                       ; attrSel <- attrSelParser
+                       ; return (Attr attr value attrSel)
+                       }
+                <|> do { id <- m_identifier
+                       ; attrSel <- attrSelParser
+                       ; return (Elem id attrSel)
+                       }
+                <|> do { m_reservedOp "*"
+                       ; attrSel <- attrSelParser
+                       ; return (Star attrSel)
+                       }
 
 run :: Show a => Parser a -> String -> IO ()
 run p input
@@ -88,4 +95,6 @@ main =
   do{ run cssSelParser ".foo";
     ; run cssSelParser "#bar";
     ; run cssSelParser "#bar [baz+]";
+    ; run cssSelParser "* [bar]"
+    ; run cssSelParser "[foo=baz] [bar]"
     }
