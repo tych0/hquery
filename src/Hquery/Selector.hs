@@ -1,14 +1,11 @@
-module Main where
+module Hquery.Selector where
 
--- import Text.ParserCombinators.Parsec
 import Text.Parsec
 import Text.Parsec.String
 import Text.Parsec.Expr
 import Text.Parsec.Token
 import Text.Parsec.Language
 import Text.Parsec.Combinator
-
-import Data.Maybe
 
 data AttrMod = Remove | Append deriving Show
 
@@ -83,18 +80,3 @@ cssSelParser = m_whiteSpace >> selParser
                        ; return (Star attrSel)
                        }
 
-run :: Show a => Parser a -> String -> IO ()
-run p input
-        = case (parse p "" input) of
-            Left err -> do{ putStr "parse error at "
-                          ; print err
-                          }
-            Right x  -> print x
-
-main =
-  do{ run cssSelParser ".foo";
-    ; run cssSelParser "#bar";
-    ; run cssSelParser "#bar [baz+]";
-    ; run cssSelParser "* [bar]"
-    ; run cssSelParser "[foo=baz] [bar]"
-    }
