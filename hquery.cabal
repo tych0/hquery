@@ -15,7 +15,7 @@ library
   hs-source-dirs: src
   exposed-modules: Hquery
   other-modules: Hquery.Selector
-  ghc-options: -Wall
+  ghc-options: -Wall -XFlexibleInstances
 
 executable hq
   hs-source-dirs: tools

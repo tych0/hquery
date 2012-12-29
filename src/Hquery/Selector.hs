@@ -2,10 +2,8 @@ module Hquery.Selector where
 
 import Text.Parsec
 import Text.Parsec.String
-import Text.Parsec.Expr
 import Text.Parsec.Token
 import Text.Parsec.Language
-import Text.Parsec.Combinator
 
 data AttrMod = Remove | Append deriving Show
 
