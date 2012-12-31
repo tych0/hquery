@@ -11,11 +11,13 @@ build-type:          Simple
 cabal-version:       >=1.8
 
 library
-  build-depends: base ==4.5.*, parsec >= 3.1
+  build-depends: base ==4.5.*, parsec >= 3.1, xmlhtml >= 0.2.0.3, text >= 0.11.2.3
   hs-source-dirs: src
   exposed-modules: Hquery
   other-modules: Hquery.Selector
-  ghc-options: -Wall -XFlexibleInstances
+                 Hquery.Transform
+  ghc-options: -Wall
+  extensions: FlexibleInstances
 
 executable hq
   hs-source-dirs: tools

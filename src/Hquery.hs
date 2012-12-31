@@ -21,3 +21,6 @@ class MakeTransformer a where
 
 instance MakeTransformer String where
   hq sel target = parseSel sel (\ s -> StringXform s target)
+
+instance MakeTransformer [String] where
+  hq sel xs = parseSel sel (\ s -> ListStringXform s xs)

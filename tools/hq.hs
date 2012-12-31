@@ -11,4 +11,5 @@ main =
     ; run "#bar [baz+]"
     ; run "* [bar]"
     ; run "[foo=baz] [bar]"
+    ; print (hq "#bar" ["a", "b"])
     }
