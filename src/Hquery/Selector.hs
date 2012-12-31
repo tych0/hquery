@@ -6,17 +6,17 @@ import Text.Parsec.String
 import Text.Parsec.Token
 import Text.Parsec.Language
 
-data AttrMod = Remove | Append deriving Show
+data AttrMod = Remove | Append | Set deriving Show
 
-data AttrSel = AttrSel Text (Maybe AttrMod) deriving Show
+data AttrSel = AttrSel Text AttrMod deriving Show
 
 data CssSel =
-  Id Text (Maybe AttrSel) |
-  Name Text (Maybe AttrSel) |
-  Class Text (Maybe AttrSel) |
-  Attr Text Text (Maybe AttrSel) |  -- [first=second], special cases for name, id?
-  Elem Text (Maybe AttrSel) |
-  Star (Maybe AttrSel)
+  Id Text |
+  Name Text |
+  Class Text |
+  Attr Text Text |  -- [first=second], special cases for name, id?
+  Elem Text |
+  Star
   deriving Show
 
 def = emptyDef{ identStart = letter
@@ -30,8 +30,8 @@ TokenParser{ parens = m_parens
            , semiSep1 = m_semiSep1
            , whiteSpace = m_whiteSpace } = makeTokenParser def
 
-attrModParser :: Parser (Maybe AttrMod)
-attrModParser = optionMaybe modParser
+attrModParser :: Parser AttrMod
+attrModParser = option Set modParser
   where
     modParser :: Parser AttrMod
     modParser =   (m_reservedOp "+" >> return Append)
@@ -43,47 +43,39 @@ attrSelParser = optionMaybe selParser
     selParser :: Parser AttrSel
     selParser = do { m_reservedOp "["
                    ; name <- m_identifier
-                   ; mod <- attrModParser
+                   ; m <- attrModParser
                    ; m_reservedOp "]"
-                   ; return (AttrSel (pack name) mod)
+                   ; return (AttrSel (pack name) m)
                    }
 
 cssSelParser :: Parser CssSel
-cssSelParser = m_whiteSpace >> selParser
-  where
-    selParser :: Parser CssSel
-    selParser = do { m_reservedOp "."
-                   ; name <- m_identifier
-                   ; attrSel <- attrSelParser
-                   ; return (Class (pack name) attrSel)
-                   }
-                <|> do { m_reservedOp "#"
-                       ; name <- m_identifier
-                       ; attrSel <- attrSelParser
-                       ; return (Id (pack name) attrSel)
-                       }
-                <|> do { m_reservedOp "["
-                       ; attr <- m_identifier
-                       ; m_reservedOp "="
-                       ; value <- m_identifier
-                       ; m_reservedOp "]"
-                       ; attrSel <- attrSelParser
-                       ; return (Attr (pack attr) (pack value) attrSel)
-                       }
-                <|> do { id <- m_identifier
-                       ; attrSel <- attrSelParser
-                       ; return (Elem (pack id) attrSel)
-                       }
-                <|> do { m_reservedOp "*"
-                       ; attrSel <- attrSelParser
-                       ; return (Star attrSel)
-                       }
+cssSelParser = do { m_reservedOp "."
+                  ; name <- m_identifier
+                  ; return (Class (pack name))
+                  }
+           <|> do { m_reservedOp "#"
+                  ; name <- m_identifier
+                  ; return (Id (pack name))
+                  }
+           <|> do { m_reservedOp "["
+                  ; attr <- m_identifier
+                  ; m_reservedOp "="
+                  ; value <- m_identifier
+                  ; m_reservedOp "]"
+                  ; return (Attr (pack attr) (pack value))
+                  }
+           <|> do { id_ <- m_identifier
+                  ; return (Elem (pack id_))
+                  }
+           <|> do { m_reservedOp "*"
+                  ; return Star
+                  }
 
-extractAttrSel :: CssSel -> Maybe AttrSel
-extractAttrSel sel = case sel of
-  Id _ s -> s
-  Name _ s -> s
-  Class _ s -> s
-  Attr _ _ s -> s
-  Elem _ s -> s
-  Star s -> s
+commandParser :: Parser (CssSel, Maybe AttrSel)
+commandParser = m_whiteSpace >> parse
+  where
+    parse :: Parser (CssSel, Maybe AttrSel)
+    parse = do
+      css <- cssSelParser
+      attr <- attrSelParser
+      return (css, attr)

@@ -10,21 +10,20 @@ import Hquery
 import Hquery.Selector
 
 buildAttrMod :: AttrSel -> Text -> Cursor -> Cursor
-buildAttrMod attrSel value = case attrSel of
-  AttrSel name Nothing -> do
+buildAttrMod (AttrSel name attrMod) value = case attrMod of
+  Set -> do
     let f = setAttribute name (value)
     modifyNode f
   _ -> id
 
 buildCursorMod :: DomTransformer -> Cursor -> Cursor
 buildCursorMod t = case t of
-  StringXform sel target -> do
-    let attrSel = extractAttrSel sel
+  StringXform sel attr target -> do
     maybe
       (setNode (TextNode (pack target)))
       (\s -> buildAttrMod s (pack target))
-      attrSel
-  ListStringXform sel targets -> id
+      attr
+  ListStringXform sel attr targets -> id
   InvalidXform _ -> id -- exception or something?
 
 transform :: CssSel -> (Cursor -> Cursor) -> Node -> Node
@@ -34,7 +33,7 @@ transform sel f rootNode = topNode (transformR (fromNode rootNode))
       let result = process cur
       maybe cur transformR (nextDF result)
     process cur = case sel of
-      Id name _ -> do
+      Id name -> do
         let node = current cur
         case getAttribute "id" node of
           Just id_ | id_ == name -> f cur
