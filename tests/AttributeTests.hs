@@ -14,7 +14,10 @@ data TestException = TestException String deriving (Show, Typeable)
 instance Exception TestException
 
 tests :: [(String, String -> Node -> Node, String)]
-tests = [ ("#foo [class+]", \s -> hq s ("bar" :: String), "AddClass")
+tests = [ ("#foo [class+]", \s -> hq s "bar", "AddClass")
+        , ("div [class+]", \s -> hq s "bar", "AddClass")
+        , ("div [class!]", \s -> hq s "baz", "RemoveClass")
+        , (".bar [class!]", \s -> hq s "baz", "RemoveClass")
         ]
 
 makeTests :: [(String, String -> Node -> Node, String)] -> IO Test
