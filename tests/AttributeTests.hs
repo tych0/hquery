@@ -3,8 +3,11 @@ module Main (main) where
 import Control.Exception
 import Data.Typeable
 import qualified Data.ByteString.Char8 as BS
-import Test.HUnit hiding (Node)
+import Test.HUnit hiding (Node, Test)
 import Text.XmlHtml
+
+import Test.Framework ( defaultMain, Test )
+import Test.Framework.Providers.HUnit
 
 import System.FilePath
 
@@ -20,16 +23,12 @@ tests = [ ("#foo [class+]", \s -> hq s "bar", "AddClass")
         , (".bar [class!]", \s -> hq s "baz", "RemoveClass")
         ]
 
-makeTests :: [(String, String -> Node -> Node, String)] -> IO Test
-makeTests xs = do
-  ts <- mapM makeTest xs
-  print ts
-  return (TestList ts)
+makeTests :: [(String, String -> Node -> Node, String)] -> IO [Test]
+makeTests xs = mapM makeTest xs
   where
     readInputAndExpected :: String -> IO (String, String)
     readInputAndExpected name = do
       let path = ("tests/attributes/" ++ name ++ ".html")
-      print ("reading stuff for " ++ path)
       inp <- readFile path
       exp <- readFile (path <.> "expected")
       return (inp, exp)
@@ -39,8 +38,7 @@ makeTests xs = do
       let parsedExp = toHTML (sel ++ " expected") exp
       let xform = builder sel
       let result = xform parsedInp
-      print (parsedExp == result)
-      return (sel ~: parsedExp ~=? result)
+      return (testCase sel (assertEqual sel parsedExp result))
       where
         docToNode doc = case doc of
                           HtmlDocument { docContent = n : _ } -> n -- There is a trailing (TextNode "\n")
@@ -49,8 +47,8 @@ makeTests xs = do
           let result = parseHTML name (BS.pack inp)
           either (\s -> throw (TestException s)) docToNode result
 
-main :: IO Counts
+main :: IO ()
 main = do
-  print ("running!")
   toRun <- makeTests (tests)
-  runTestTT toRun
+  defaultMain toRun
+
