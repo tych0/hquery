@@ -33,14 +33,14 @@ instance MakeTransformer Node where
   hq sel target = parseSel sel buildNodeXform
     where
       buildNodeXform (css, attr) = case attr of
-        Just _ -> id -- TODO: error handling? can't insert a list of attrs?
+        Just _ -> id -- TODO: error handling? can't insert node in attr?
         Nothing -> transform css (setNode target)
 
 instance MakeTransformer [Node] where
   hq sel ns = parseSel sel buildNodesXform
     where
       buildNodesXform (css, attr) = case attr of
-        Just _ -> id -- TODO: error handling? can't insert a list of attrs?
+        Just _ -> id -- TODO: error handling? can't insert nodes in an attr
         Nothing -> do
           let insertNodes = insertManyRight ns
           let result cur = removeGoRight (insertNodes cur)

@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 module Hquery.Transform where
 
 import qualified Data.Text as T
@@ -35,7 +33,7 @@ transform sel f rootNode = topNode (transformR (fromNode rootNode))
       Name name -> matchAttr "name" ((==) name)
       Class name -> matchAttr "class" (\x -> isInfixOf [name] (T.words x))
       Attr key value -> matchAttr key ((==) value)
-      Elem name -> do
+      Elem name ->
         case tagName node of
           Just id_ | id_ == name -> f cur
           _ -> cur
