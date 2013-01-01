@@ -3,7 +3,9 @@ module Main where
 import Hquery
 
 run :: String -> IO ()
-run input = print (hq input "")
+run input = do
+  let _ = hq input ""
+  print "hello"
 
 main =
   do{ run ".foo"
@@ -11,5 +13,4 @@ main =
     ; run "#bar [baz+]"
     ; run "* [bar]"
     ; run "[foo=baz] [bar]"
-    ; print (hq "#bar" ["a", "b"])
     }

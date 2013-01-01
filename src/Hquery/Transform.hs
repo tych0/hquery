@@ -6,7 +6,6 @@ import Data.Text
 import Text.XmlHtml
 import Text.XmlHtml.Cursor
 
-import Hquery
 import Hquery.Selector
 
 buildAttrMod :: AttrSel -> Text -> Cursor -> Cursor
@@ -15,16 +14,6 @@ buildAttrMod (AttrSel name attrMod) value = case attrMod of
     let f = setAttribute name (value)
     modifyNode f
   _ -> id
-
-buildCursorMod :: DomTransformer -> Cursor -> Cursor
-buildCursorMod t = case t of
-  StringXform sel attr target -> do
-    maybe
-      (setNode (TextNode (pack target)))
-      (\s -> buildAttrMod s (pack target))
-      attr
-  ListStringXform sel attr targets -> id
-  InvalidXform _ -> id -- exception or something?
 
 transform :: CssSel -> (Cursor -> Cursor) -> Node -> Node
 transform sel f rootNode = topNode (transformR (fromNode rootNode))
