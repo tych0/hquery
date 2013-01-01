@@ -25,29 +25,17 @@ transform sel f rootNode = topNode (transformR (fromNode rootNode))
     transformR cur = do
       let result = process cur
       maybe cur transformR (nextDF result)
-    process cur = case sel of
-      Id name -> do
-        let node = current cur
-        case getAttribute "id" node of
-          Just id_ | id_ == name -> f cur
-          _ -> cur
-      Name name -> do
-        let node = current cur
-        case getAttribute "name" node of
-          Just id_ | id_ == name -> f cur
-          _ -> cur
-      Class name -> do
-        let node = current cur
-        case getAttribute "class" node of
-          Just classes | isInfixOf [name] (T.words classes) -> f cur
-          _ -> cur
-      Attr key value -> do
-        let node = current cur
-        case getAttribute key node of
-          Just id_ | id_ == value -> f cur
-          _ -> cur
+    process cur = do
+    let node = current cur
+    let matchAttr attr pred_ = case getAttribute attr node of
+                                Just value | pred_ value -> f cur
+                                _ -> cur
+    case sel of
+      Id name -> matchAttr "id" ((==) name)
+      Name name -> matchAttr "name" ((==) name)
+      Class name -> matchAttr "class" (\x -> isInfixOf [name] (T.words x))
+      Attr key value -> matchAttr key ((==) value)
       Elem name -> do
-        let node = current cur
         case tagName node of
           Just id_ | id_ == name -> f cur
           _ -> cur
