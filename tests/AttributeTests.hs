@@ -39,7 +39,7 @@ makeTests xs = mapM makeTest xs
       let parsedExp = toHTML (sel ++ " expected") exp
       let xform = builder sel
       let result = xform parsedInp
-      return (testCase sel (assertBool sel (nodeEq parsedExp result)))
+      return (testCase sel (assertNodeEq parsedExp result))
       where
         docToNode doc = case doc of
                           HtmlDocument { docContent = n : _ } -> n -- There is a trailing (TextNode "\n")
@@ -47,6 +47,14 @@ makeTests xs = mapM makeTest xs
         toHTML name inp = do
           let result = parseHTML name (BS.pack inp)
           either (\s -> throw (TestException s)) docToNode result
+        assertNodeEq n1 n2 = do
+          let result = nodeEq n1 n2
+          if result
+            then do
+              print ("expected: " ++ (show n1))
+              print ("got     : " ++ (show n2))
+            else
+              return ()
 
 main :: IO ()
 main = do
