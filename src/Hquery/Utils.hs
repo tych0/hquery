@@ -5,6 +5,10 @@ import qualified Data.Set as Set
 import qualified Data.Text as T
 import Text.XmlHtml
 
+newtype EqNode a = EqNode a deriving Show
+instance Eq (EqNode Node) where
+  (EqNode n1) == (EqNode n2) = nodeEq n1 n2
+
 attrsEq :: [(T.Text, T.Text)] -> [(T.Text, T.Text)] -> Bool
 attrsEq attrs1 attrs2 = do
   let (m1, class1) = mapNoClass attrs1
