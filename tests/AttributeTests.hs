@@ -12,6 +12,7 @@ import Test.Framework.Providers.HUnit
 import System.FilePath
 
 import Hquery
+import Hquery.Utils
 
 data TestException = TestException String deriving (Show, Typeable)
 instance Exception TestException
@@ -38,7 +39,7 @@ makeTests xs = mapM makeTest xs
       let parsedExp = toHTML (sel ++ " expected") exp
       let xform = builder sel
       let result = xform parsedInp
-      return (testCase sel (assertEqual sel parsedExp result))
+      return (testCase sel (assertBool sel (nodeEq parsedExp result)))
       where
         docToNode doc = case doc of
                           HtmlDocument { docContent = n : _ } -> n -- There is a trailing (TextNode "\n")
