@@ -49,10 +49,11 @@ makeTests xs = mapM makeTest xs
           either (\s -> throw (TestException s)) docToNode result
         assertNodeEq n1 n2 = do
           let result = nodeEq n1 n2
-          if result
+          if not result
             then do
-              print ("expected: " ++ (show n1))
-              print ("got     : " ++ (show n2))
+              putStr "expected: "; putStrLn (show n1)
+              putStr " but got: "; putStrLn (show n2)
+              Test.HUnit.assert False
             else
               return ()
 
