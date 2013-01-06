@@ -24,8 +24,8 @@ tests = [ ("#foo [class+]", \s -> hq s "bar", "AddClass")
         , (".bar [class!]", \s -> hq s "baz", "RemoveClass")
         , ("#foo [id!]", \s -> hq s "baz", "RemoveId")
         , ("li", \s -> hq s ["one", "two", "three"], "PopulateList")
-        , ("thisshouldnotmatch" \s -> hq s "", "Noop")
-        , ("div [class+]" \s -> hq s "bar", "AppendClass")
+        , ("thisshouldnotmatch", \s -> hq s "", "Noop")
+        , ("div [class+]", \s -> hq s "bar", "AppendClass")
         ]
 
 makeTests :: [(String, String -> Node -> Node, String)] -> IO [Test]
