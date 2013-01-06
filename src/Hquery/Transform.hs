@@ -10,13 +10,26 @@ import Hquery.Selector
 buildAttrMod :: AttrSel -> T.Text -> Cursor -> Cursor
 buildAttrMod (AttrSel name attrMod) value cur = do
   let att = maybe "" id (getAttribute name (current cur))
+  let remove n = case n of
+                 Element { elementTag = tag
+                         , elementAttrs = attrs
+                         , elementChildren = kids
+                         }
+                   -> Element { elementTag = tag
+                              , elementAttrs = filter (\(x, _) -> x == name) attrs
+                              , elementChildren = kids
+                              }
+                 _ -> n
   let f = case attrMod of
             Set -> setAttribute name (value)
             Remove | name == "class" -> do
               let classes = T.words value
               let without = filter ((flip notElem) classes) (T.words att)
-              setAttribute name (T.intercalate "" without)
-            Remove -> setAttribute name ""
+              let result = T.intercalate "" without
+              if T.null result
+                then remove
+                else setAttribute name result
+            Remove -> remove
             Append -> setAttribute name (T.append att value)
   modifyNode f cur
 
