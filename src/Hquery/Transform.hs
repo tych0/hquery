@@ -30,6 +30,9 @@ buildAttrMod (AttrSel name attrMod) value cur = do
                 then remove
                 else setAttribute name result
             Remove -> remove
+            Append | name == "class" -> do
+              let classes = value : (T.words att)
+              setAttribute name (T.unwords classes)
             Append -> setAttribute name (T.append att value)
   modifyNode f cur
 
