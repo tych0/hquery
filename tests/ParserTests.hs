@@ -6,6 +6,7 @@ import Test.Framework.Providers.HUnit
 import Test.HUnit hiding (Test)
 
 import Text.Parsec
+import Text.Parsec.Error
 
 import Hquery
 import Hquery.Selector
@@ -17,10 +18,12 @@ tests = [ ("div", (Elem "div", Nothing))
         , (".elt *", (Class "elt", Nothing))
         ]
 
+
 makeTest :: (String, (CssSel, Maybe AttrSel)) -> Test
 makeTest (sel, expected) = do
-  let result = either (\_ -> Nothing) Just (parse commandParser "" sel)
-  testCase sel (assertEqual sel (Just expected) result)
+  let errorToString e = Left (unwords (map messageString (errorMessages e)))
+      result = either errorToString Right (parse commandParser "" sel)
+  testCase sel (assertEqual sel (Right expected) result)
 
 main :: IO ()
 main = defaultMain (map makeTest tests)
