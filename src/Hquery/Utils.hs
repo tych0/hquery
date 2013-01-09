@@ -4,6 +4,7 @@ import qualified Data.Map as Map
 import qualified Data.Set as Set
 import qualified Data.Text as T
 import Text.XmlHtml
+import Data.Maybe
 
 newtype EqNode a = EqNode a deriving Show
 instance Eq (EqNode Node) where
@@ -36,8 +37,13 @@ nodeEq Element { elementTag = tag1
                , elementAttrs = attrs2
                , elementChildren = kids2
                }
-       =  tag1 == tag2
+       = tag1 == tag2
        && attrsEq attrs1 attrs2
        && all (uncurry nodeEq) (zip kids1 kids2)
 nodeEq _ _ = False
 
+stripWhitespaceNodes :: Node -> Maybe Node
+stripWhitespaceNodes (TextNode t1) | T.null (T.strip (t1)) = Nothing
+stripWhitespaceNodes e @ Element { elementChildren = kids } =
+  Just (e { elementChildren = mapMaybe stripWhitespaceNodes kids })
+stripWhitespaceNodes x = Just x

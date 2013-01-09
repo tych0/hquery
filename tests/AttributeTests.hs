@@ -42,8 +42,9 @@ makeTests xs = mapM makeTest xs
       let parsedInp = toHTML (sel ++ " input") inp
       let parsedExp = toHTML (sel ++ " expected") exp
       let xform = builder sel
-      let result = xform parsedInp
-      return (testCase sel (assertEqual sel (EqNode parsedExp) (EqNode result)))
+      let result = fmap EqNode (stripWhitespaceNodes (xform parsedInp))
+      let expected = fmap EqNode (stripWhitespaceNodes (parsedExp))
+      return (testCase sel (assertEqual sel expected result))
       where
         docToNode doc = case doc of
                           HtmlDocument { docContent = n : _ } -> n -- There is a trailing (TextNode "\n")
