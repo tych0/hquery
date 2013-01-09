@@ -6,9 +6,9 @@ import Text.Parsec.String
 import Text.Parsec.Token
 import Text.Parsec.Language
 
-data AttrMod = Remove | Append | Set deriving Show
+data AttrMod = Remove | Append | Set deriving (Show, Eq)
 
-data AttrSel = AttrSel Text AttrMod deriving Show
+data AttrSel = AttrSel Text AttrMod deriving (Show, Eq)
 
 data CssSel =
   Id Text |
@@ -17,7 +17,7 @@ data CssSel =
   Attr Text Text |  -- [first=second], special cases for name, id?
   Elem Text |
   Star
-  deriving Show
+  deriving (Show, Eq)
 
 def = emptyDef{ identStart = letter
               , identLetter = alphaNum
@@ -78,4 +78,5 @@ commandParser = m_whiteSpace >> parse
     parse = do
       css <- cssSelParser
       attr <- attrSelParser
+      _ <- eof
       return (css, attr)

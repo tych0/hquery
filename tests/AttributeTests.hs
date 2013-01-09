@@ -23,7 +23,7 @@ tests = [ ("#foo [class+]", \s -> hq s "bar", "AddClass")
         , ("div [class!]", \s -> hq s "baz", "RemoveClass")
         , (".bar [class!]", \s -> hq s "baz", "RemoveClass")
         , ("#foo [id!]", \s -> hq s "baz", "RemoveId")
-        , ("li", \s -> hq s ["one", "two", "three"], "PopulateList")
+        , (".elt *", \s -> hq s ["one", "two", "three"], "PopulateList")
         , ("thisshouldnotmatch", \s -> hq s "", "Noop")
         , ("div [class+]", \s -> hq s "bar", "AppendClass")
         ]
