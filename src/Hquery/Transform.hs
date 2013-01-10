@@ -35,6 +35,7 @@ buildAttrMod (AttrSel name attrMod) value cur = do
               setAttribute name (T.unwords classes)
             Append -> setAttribute name (T.append att value)
   modifyNode f cur
+buildAttrMod CData _ cur = cur
 
 transform :: CssSel -> (Cursor -> Cursor) -> Node -> Node
 transform sel f rootNode = topNode (transformR (fromNode rootNode))

@@ -21,7 +21,9 @@ instance MakeTransformer String where
   hq sel target = parseSel sel buildStringXform
     where
       buildStringXform (css, attr) = do
-        let dflt = (setNode (TextNode (T.pack target)))
+        let dflt c = case (attr, current c) of
+                       (Just CData, e @ Element {}) -> setNode (e { elementChildren = [TextNode (T.pack target)] }) c
+                       _ -> (setNode (TextNode (T.pack target))) c
         let hasMod = (\s -> buildAttrMod s (T.pack target))
         let nodeXform = maybe dflt hasMod attr
         transform css nodeXform

@@ -37,3 +37,9 @@ test-suite ParserTests
   main-is: ParserTests.hs
   type: exitcode-stdio-1.0
   build-depends: base ==4.5.*, hquery >= 0.1.0.0, HUnit, test-framework, test-framework-hunit, parsec >= 3.1
+
+test-suite UtilsTests
+  hs-source-dirs: tests
+  main-is: UtilsTests.hs
+  type: exitcode-stdio-1.0
+  build-depends: base ==4.5.*, hquery >= 0.1.0.0, HUnit, test-framework, test-framework-hunit, xmlhtml >= 0.2.0.3, text >= 0.11.2.3

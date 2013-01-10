@@ -39,6 +39,7 @@ nodeEq Element { elementTag = tag1
                }
        = tag1 == tag2
        && attrsEq attrs1 attrs2
+       && length kids1 == length kids2
        && all (uncurry nodeEq) (zip kids1 kids2)
 nodeEq _ _ = False
 

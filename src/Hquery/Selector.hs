@@ -8,7 +8,11 @@ import Text.Parsec.Language
 
 data AttrMod = Remove | Append | Set deriving (Show, Eq)
 
-data AttrSel = AttrSel Text AttrMod deriving (Show, Eq)
+data AttrSel =
+  AttrSel Text AttrMod |
+  CData
+  deriving (Show, Eq)
+
 
 data CssSel =
   Id Text |
@@ -46,6 +50,9 @@ attrSelParser = optionMaybe selParser
                    ; m <- attrModParser
                    ; m_reservedOp "]"
                    ; return (AttrSel (pack name) m)
+                   }
+            <|> do { m_reservedOp "*"
+                   ; return CData
                    }
 
 cssSelParser :: Parser CssSel

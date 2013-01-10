@@ -15,9 +15,8 @@ import Hquery.Utils
 tests :: [(String, (CssSel, Maybe AttrSel))]
 tests = [ ("div", (Elem "div", Nothing))
         , (".elt", (Class "elt", Nothing))
-        , (".elt *", (Class "elt", Nothing))
+        , (".elt *", (Class "elt", Just CData))
         ]
-
 
 makeTest :: (String, (CssSel, Maybe AttrSel)) -> Test
 makeTest (sel, expected) = do
