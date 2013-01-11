@@ -5,6 +5,7 @@ import Control.Monad
 import Control.Exception
 import Data.Typeable
 import Data.List
+import Data.Maybe
 
 import qualified Data.Text as T
 import Text.Parsec
@@ -62,18 +63,15 @@ instance MakeTransformer [Node] where
             in replaceCurrent replicated c
           _ -> c -- FIXME: bug: shouldn't be replicating on a non-Element node
       replaceCurrent :: [Node] -> Cursor -> Cursor
-      replaceCurrent ns c = let curN = current c in
-        case fmap (\c -> (current c, c)) (parent c) of
-          Just (pn @ Element {elementChildren = kids }, pc) -> do
-            -- the current node should be a child of the parent
-            let idx = maybe (raise "idx bug!") id (findIndex ((==) curN) kids)
-            let next = setNode (pn { elementChildren = concat (map replaceN kids) }) pc
-            -- the next has the right number of children
-            maybe (raise "bug!") id (getChild (idx - 1 + (length ns)) next)
-            where
-              replaceN n2 = if n2 == curN then ns else [n2]
-          -- FIXME: shouldn't be a non-Element node, because of parent call
-          Just _ -> raise "bug! no non-Element nodes as parents!"
-          -- XXX: BUG: if you replace the root node with an empty list of
-          -- nodes, nothing happens.
-          Nothing -> maybe c id (fromNodes ns)
+      replaceCurrent ns c = fromMaybe dflt $ do
+        p <- parent c
+        case current p of
+          pn@Element { elementChildren = kids } -> do
+            ix <- elemIndex curN kids
+            let next = setNode (pn { elementChildren = concatMap replaceN kids }) p
+            getChild (ix - 1 + (length ns)) next
+          _ -> raise "should be no non-Element parents!"
+        where
+          curN = current c
+          replaceN n2 = if n2 == curN then ns else [n2]
+          dflt = fromMaybe c (fromNodes ns)
