@@ -45,11 +45,7 @@ instance MakeTransformer [String] where
   hq sel xs = hq sel (map (\s -> TextNode (T.pack s)) xs)
 
 instance MakeTransformer Node where
-  hq sel target = parseSel sel buildNodeXform
-    where
-      buildNodeXform (css, attr) = case attr of
-        Just _ -> id -- TODO: error handling? can't insert node in attr?
-        Nothing -> transform css (setNode target)
+  hq sel target = hq sel [target]
 
 instance MakeTransformer [Node] where
   hq sel ns = parseSel sel buildNodesXform
