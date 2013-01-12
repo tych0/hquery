@@ -61,17 +61,18 @@ instance MakeTransformer [Node] where
           e @ Element {} ->
             let replicated = map (\x -> e { elementChildren = [x] }) ns
             in replaceCurrent replicated c
-          _ -> c -- FIXME: bug: shouldn't be replicating on a non-Element node
-      replaceCurrent :: [Node] -> Cursor -> Cursor
-      replaceCurrent ns c = fromMaybe dflt $ do
-        p <- parent c
-        case current p of
-          pn@Element { elementChildren = kids } -> do
-            ix <- elemIndex curN kids
-            let next = setNode (pn { elementChildren = concatMap replaceN kids }) p
-            getChild (ix - 1 + (length ns)) next
-          _ -> raise "should be no non-Element parents!"
-        where
-          curN = current c
-          replaceN n2 = if n2 == curN then ns else [n2]
-          dflt = fromMaybe c (fromNodes ns)
+          _ -> raise "bug: shouldn't be replicating on a non-Element node"
+
+replaceCurrent :: [Node] -> Cursor -> Cursor
+replaceCurrent ns c = fromMaybe dflt $ do
+  p <- parent c
+  case current p of
+    pn@Element { elementChildren = kids } -> do
+      ix <- elemIndex curN kids
+      let next = setNode (pn { elementChildren = concatMap replaceN kids }) p
+      getChild (ix - 1 + (length ns)) next
+    _ -> raise "should be no non-Element parents!"
+  where
+    curN = current c
+    replaceN n2 = if n2 == curN then ns else [n2]
+    dflt = fromMaybe c (fromNodes ns)
