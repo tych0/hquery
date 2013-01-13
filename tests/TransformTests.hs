@@ -23,9 +23,14 @@ tests = [ ("#foo [class+]", \s -> hq s "bar", "AddClass")
         , ("div [class!]", \s -> hq s "baz", "RemoveClass")
         , (".bar [class!]", \s -> hq s "baz", "RemoveClass")
         , ("#foo [id!]", \s -> hq s "baz", "RemoveId")
+        , (".foo *", \s -> hq s "bar", "PopulateString")
         , (".elt *", \s -> hq s ["one", "two", "three"], "PopulateList")
         , ("thisshouldnotmatch", \s -> hq s "", "Noop")
         , ("div [class+]", \s -> hq s "bar", "AppendClass")
+        , ( "basic composition"
+          , \_ -> (hq ".name *" "Aaron Swartz") . (hq ".address *" "aaronsw@example.com")
+          , "BasicComposition"
+          )
         ]
 
 makeTests :: [(String, String -> Node -> Node, String)] -> IO [Test]
@@ -33,7 +38,7 @@ makeTests xs = mapM makeTest xs
   where
     readInputAndExpected :: String -> IO (String, String)
     readInputAndExpected name = do
-      let path = ("tests/attributes/" ++ name ++ ".html")
+      let path = ("tests/markup/" ++ name ++ ".html")
       inp <- readFile path
       exp <- readFile (path <.> "expected")
       return (inp, exp)

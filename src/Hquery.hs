@@ -1,9 +1,5 @@
-{-# LANGUAGE DeriveDataTypeable #-}
 module Hquery where
 
-import Control.Monad
-import Control.Exception
-import Data.Typeable
 import Data.List
 import Data.Maybe
 
@@ -11,15 +7,9 @@ import qualified Data.Text as T
 import Text.Parsec
 import Text.XmlHtml
 import Text.XmlHtml.Cursor
+import Hquery.Error
 import Hquery.Selector
 import Hquery.Transform
-
-data HqueryInternalException = HqueryInternalException String
-  deriving (Show, Typeable)
-instance Exception HqueryInternalException
-
-raise :: String -> a
-raise s = throw (HqueryInternalException s)
 
 parseSel :: String -> ((CssSel, Maybe AttrSel) -> Node -> Node) -> Node -> Node
 parseSel sel f =
@@ -34,19 +24,24 @@ class MakeTransformer a where
 instance MakeTransformer String where
   hq sel target = parseSel sel buildStringXform
     where
-      buildStringXform (css, attr) = do
-        let dflt c = case (attr, current c) of
-                       (Just CData, e @ Element {}) -> setNode (e { elementChildren = [TextNode (T.pack target)] }) c
-                       _ -> (setNode (TextNode (T.pack target))) c
-        let hasMod = (\s -> buildAttrMod s (T.pack target))
-        let nodeXform = maybe dflt hasMod attr
-        transform css nodeXform
+      buildStringXform (css, attr) = transform css (nodeXform attr)
+      nodeXform attr c = case (attr, current c) of
+        (Just CData, e @ Element {}) -> setNode (e { elementChildren = [TextNode (T.pack target)] }) c
+        -- the non-Element case isn't relevant here, since we can't match non-Elements
+        (Just s, _) -> buildAttrMod s (T.pack target) c
+        (Nothing, _) -> (setNode (TextNode (T.pack target))) c
 
 instance MakeTransformer [String] where
   hq sel xs = hq sel (map (\s -> TextNode (T.pack s)) xs)
 
 instance MakeTransformer Node where
   hq sel target = hq sel [target]
+
+instance MakeTransformer (Node -> Node) where
+  hq sel f = parseSel sel (\(css, _) -> transform css applyF)
+    where
+      applyF :: Cursor -> Cursor
+      applyF c = setNode (f (current c)) c
 
 instance MakeTransformer [Node] where
   hq sel ns = parseSel sel buildNodesXform

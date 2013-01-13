@@ -5,6 +5,7 @@ import Data.List
 import Text.XmlHtml
 import Text.XmlHtml.Cursor
 
+import Hquery.Error
 import Hquery.Selector
 
 buildAttrMod :: AttrSel -> T.Text -> Cursor -> Cursor
@@ -35,7 +36,7 @@ buildAttrMod (AttrSel name attrMod) value cur = do
               setAttribute name (T.unwords classes)
             Append -> setAttribute name (T.append att value)
   modifyNode f cur
-buildAttrMod CData _ cur = cur
+buildAttrMod CData _ cur = (raise "shouldn't be attr-modding a CData")
 
 transform :: CssSel -> (Cursor -> Cursor) -> Node -> Node
 transform sel f rootNode = topNode (transformR (fromNode rootNode))
