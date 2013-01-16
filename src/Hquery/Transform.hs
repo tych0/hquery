@@ -2,8 +2,11 @@ module Hquery.Transform where
 
 import qualified Data.Text as T
 import Data.List
+import Data.Maybe
 import Text.XmlHtml
 import Text.XmlHtml.Cursor
+
+import Control.Monad
 
 import Hquery.Error
 import Hquery.Selector
@@ -36,10 +39,11 @@ buildAttrMod (AttrSel name attrMod) value cur = do
               setAttribute name (T.unwords classes)
             Append -> setAttribute name (T.append att value)
   modifyNode f cur
-buildAttrMod CData _ cur = (raise "shouldn't be attr-modding a CData")
+buildAttrMod CData _ _ = (raise "shouldn't be attr-modding a CData")
 
-transform :: CssSel -> (Cursor -> Cursor) -> Node -> Node
-transform sel f rootNode = topNode (transformR (fromNode rootNode))
+transform :: CssSel -> (Cursor -> Cursor) -> [Node] -> [Node]
+transform sel f roots =
+  fromMaybe [] $ liftM (\c -> topNodes (transformR c)) (fromNodes roots)
   where
     transformR cur = do
       let result = process cur

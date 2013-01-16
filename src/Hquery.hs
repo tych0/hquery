@@ -11,20 +11,22 @@ import Hquery.Error
 import Hquery.Selector
 import Hquery.Transform
 
-parseSel :: String -> ((CssSel, Maybe AttrSel) -> Node -> Node) -> Node -> Node
-parseSel sel f =
-  either
-    (\_ -> id) -- TODO: error handling? invalid sel
-    f
-    (parse commandParser "" sel)
+import Debug.Trace
+
+parseSel :: String ->
+            (Maybe AttrSel -> Cursor -> Cursor) ->
+            [Node] ->
+            [Node]
+parseSel sel builder = case parse commandParser "" sel of
+  Left _ -> id -- TODO: error handling? invalid sel
+  Right (css, attr) -> transform css (builder attr)
 
 class MakeTransformer a where
-  hq :: String -> a -> Node -> Node
+  hq :: String -> a -> [Node] -> [Node]
 
 instance MakeTransformer String where
-  hq sel target = parseSel sel buildStringXform
+  hq sel target = parseSel sel nodeXform
     where
-      buildStringXform (css, attr) = transform css (nodeXform attr)
       nodeXform attr c = case (attr, current c) of
         (Just CData, e @ Element {}) -> setNode (e { elementChildren = [TextNode (T.pack target)] }) c
         -- the non-Element case isn't relevant here, since we can't match non-Elements
@@ -37,19 +39,22 @@ instance MakeTransformer [String] where
 instance MakeTransformer Node where
   hq sel target = hq sel [target]
 
-instance MakeTransformer (Node -> Node) where
-  hq sel f = parseSel sel (\(css, _) -> transform css applyF)
+instance MakeTransformer ([Node] -> [Node]) where
+  hq sel f = hq sel [f]
+
+instance MakeTransformer [[Node] -> [Node]] where
+  hq sel fs = parseSel sel (\_ -> replicateAndApply)
     where
-      applyF :: Cursor -> Cursor
-      applyF c = setNode (f (current c)) c
+      replicateAndApply c = let n = (current c)
+                                ns = concat $ fmap ($[n]) fs
+                            in replaceCurrent ns c
 
 instance MakeTransformer [Node] where
   hq sel ns = parseSel sel buildNodesXform
     where
-      buildNodesXform (css, attr) = case attr of
-        Just CData -> transform css replicateNode
-        Just _ -> id -- TODO: error handling? can't insert nodes in an attr
-        Nothing -> transform css (replaceCurrent ns)
+      buildNodesXform (Just CData) = replicateNode
+      buildNodesXform (Just _) = id -- TODO: error handling? can't insert nodes in an attr
+      buildNodesXform Nothing = replaceCurrent(ns)
       replicateNode :: Cursor -> Cursor
       replicateNode c = let n = (current c) in
         case n of
@@ -70,4 +75,7 @@ replaceCurrent ns c = fromMaybe dflt $ do
   where
     curN = current c
     replaceN n2 = if n2 == curN then ns else [n2]
-    dflt = fromMaybe c (fromNodes ns)
+    dflt = fromMaybe c $ do
+      newCur <- (fromNodes ns)
+      endCur <- findRight isLast newCur
+      return endCur
