@@ -65,17 +65,15 @@ makeTests xs = mapM makeTest xs
       let expected = comparable parsedExp
       return (testCase testName (assertEqual testName expected result))
       where
-        comparable :: [Node] -> [EqNode Node]
         comparable ns = map EqNode $ catMaybes (map stripWhitespaceNodes ns)
         docToNode doc = case doc of
                           HtmlDocument { docContent = content } -> content
                           _ -> throw (TestException (testName ++ "'s inp/exp is not a single node" ++ show doc))
         toHTML name inp = do
           let result = parseHTML name (BS.pack inp)
-          either (\s -> throw (TestException s)) docToNode result
+          either (throw . TestException) docToNode result
 
 main :: IO ()
 main = do
   toRun <- makeTests (tests)
   defaultMain toRun
-

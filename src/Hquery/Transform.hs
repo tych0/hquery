@@ -20,7 +20,7 @@ buildAttrMod (AttrSel name attrMod) value cur = do
                          , elementChildren = kids
                          }
                    -> Element { elementTag = tag
-                              , elementAttrs = filter (\(x, _) -> x /= name) attrs
+                              , elementAttrs = filter ((name /=) . fst) attrs
                               , elementChildren = kids
                               }
                  _ -> n

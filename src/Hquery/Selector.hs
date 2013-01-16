@@ -13,7 +13,6 @@ data AttrSel =
   CData
   deriving (Show, Eq)
 
-
 data CssSel =
   Id Text |
   Name Text |

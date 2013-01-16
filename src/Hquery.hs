@@ -11,8 +11,6 @@ import Hquery.Error
 import Hquery.Selector
 import Hquery.Transform
 
-import Debug.Trace
-
 parseSel :: String ->
             (Maybe AttrSel -> Cursor -> Cursor) ->
             [Node] ->
@@ -34,7 +32,7 @@ instance MakeTransformer String where
         (Nothing, _) -> (setNode (TextNode (T.pack target))) c
 
 instance MakeTransformer [String] where
-  hq sel xs = hq sel (map (\s -> TextNode (T.pack s)) xs)
+  hq sel xs = hq sel (map (TextNode . T.pack) xs)
 
 instance MakeTransformer Node where
   hq sel target = hq sel [target]

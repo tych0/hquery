@@ -9,4 +9,4 @@ data HqueryInternalException = HqueryInternalException String
 instance Exception HqueryInternalException
 
 raise :: String -> a
-raise s = throw (HqueryInternalException s)
+raise = throw . HqueryInternalException
