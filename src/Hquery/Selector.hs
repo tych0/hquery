@@ -1,10 +1,12 @@
 module Hquery.Selector where
 
 import Data.Text
-import Text.Parsec
+import Text.Parsec hiding (many, optional, (<|>))
 import Text.Parsec.String
 import Text.Parsec.Token
 import Text.Parsec.Language
+
+import Control.Applicative
 
 data AttrMod = Remove | Append | Set deriving (Show, Eq)
 
@@ -26,63 +28,32 @@ def = emptyDef{ identStart = letter
               , identLetter = alphaNum
               }
 
-TokenParser{ parens = m_parens
-           , identifier = m_identifier
-           , reservedOp = m_reservedOp
-           , reserved = m_reserved
-           , semiSep1 = m_semiSep1
-           , whiteSpace = m_whiteSpace } = makeTokenParser def
+TokenParser{ identifier = m_identifier
+           , reservedOp = rop
+           } = makeTokenParser def
+
+idp :: Parser Text
+idp = pack <$> m_identifier
 
 attrModParser :: Parser AttrMod
-attrModParser = option Set modParser
-  where
-    modParser :: Parser AttrMod
-    modParser =   (m_reservedOp "+" >> return Append)
-              <|> (m_reservedOp "!" >> return Remove)
+attrModParser = option Set $
+      (Append <$ rop "+")
+  <|> (Remove <$ rop "!")
 
 attrSelParser :: Parser (Maybe AttrSel)
 attrSelParser = optionMaybe selParser
   where
     selParser :: Parser AttrSel
-    selParser = do { m_reservedOp "["
-                   ; name <- m_identifier
-                   ; m <- attrModParser
-                   ; m_reservedOp "]"
-                   ; return (AttrSel (pack name) m)
-                   }
-            <|> do { m_reservedOp "*"
-                   ; return CData
-                   }
+    selParser =
+          AttrSel <$> (rop "[" *> idp) <*> attrModParser <* rop "]"
+      <|> CData <$ rop "*"
 
 cssSelParser :: Parser CssSel
-cssSelParser = do { m_reservedOp "."
-                  ; name <- m_identifier
-                  ; return (Class (pack name))
-                  }
-           <|> do { m_reservedOp "#"
-                  ; name <- m_identifier
-                  ; return (Id (pack name))
-                  }
-           <|> do { m_reservedOp "["
-                  ; attr <- m_identifier
-                  ; m_reservedOp "="
-                  ; value <- m_identifier
-                  ; m_reservedOp "]"
-                  ; return (Attr (pack attr) (pack value))
-                  }
-           <|> do { id_ <- m_identifier
-                  ; return (Elem (pack id_))
-                  }
-           <|> do { m_reservedOp "*"
-                  ; return Star
-                  }
+cssSelParser = Class <$> (rop "." *> idp)
+           <|> Id <$> (rop "#" *> idp)
+           <|> Attr <$> (rop "[" *> idp) <*> (rop "=" *> idp <* rop "]")
+           <|> Star <$ rop "*"
+           <|> Elem <$> idp
 
 commandParser :: Parser (CssSel, Maybe AttrSel)
-commandParser = m_whiteSpace >> parse
-  where
-    parse :: Parser (CssSel, Maybe AttrSel)
-    parse = do
-      css <- cssSelParser
-      attr <- attrSelParser
-      _ <- eof
-      return (css, attr)
+commandParser = (,) <$> (cssSelParser <* spaces) <*> attrSelParser
