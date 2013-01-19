@@ -1,5 +1,23 @@
+-- | This module exports various useful utility functions for working with
+-- XmlHtml Nodes. For example, the equality operator on Node does a structural
+-- comparison of the nodes. However, this is not entirely useful, since
+-- transformed nodes may be equal but e.g. have their attributes in a different
+-- order in the list. Among other things, this module defines an EqNode type
+-- which has an Eq instance that does semantic equality instead of structural
+-- equality.
 {-# LANGUAGE OverloadedStrings #-}
-module Text.Hquery.Utils where
+module Text.Hquery.Utils (
+  -- * Types
+  EqNode(..),
+
+  -- * Functions
+  -- ** Equality
+  attrsEq,
+  nodeEq,
+
+  -- ** Utility
+  stripWhitespaceNodes
+  ) where
 
 import qualified Data.Map as Map
 import qualified Data.Set as Set
@@ -7,8 +25,8 @@ import qualified Data.Text as T
 import Text.XmlHtml
 import Data.Maybe
 
-newtype EqNode a = EqNode a deriving Show
-instance Eq (EqNode Node) where
+newtype EqNode = EqNode Node deriving Show
+instance Eq (EqNode) where
   (EqNode n1) == (EqNode n2) = nodeEq n1 n2
 
 attrsEq :: [(T.Text, T.Text)] -> [(T.Text, T.Text)] -> Bool
@@ -44,6 +62,10 @@ nodeEq Element { elementTag = tag1
        && all (uncurry nodeEq) (zip kids1 kids2)
 nodeEq _ _ = False
 
+-- | Strip nodes that contain only whitespace. This can be useful when doing
+-- equality comparisons of trees (e.g. in testing). XmlHtml keeps all
+-- whitespace, which can cause structural equality differences in trees which
+-- were produced programattically vs. hand written and nicely formatted trees.
 stripWhitespaceNodes :: Node -> Maybe Node
 stripWhitespaceNodes (TextNode t1) | T.null (T.strip (t1)) = Nothing
 stripWhitespaceNodes e @ Element { elementChildren = kids } =

@@ -1,4 +1,9 @@
-module Text.Hquery where
+-- | This module exports the top level constructors used for building node
+-- transformations.
+module Text.Hquery (
+  -- * Constructors
+  MakeTransformer(..)
+  ) where
 
 import Data.List
 import Data.Maybe

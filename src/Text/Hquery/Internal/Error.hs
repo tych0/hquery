@@ -1,3 +1,4 @@
+-- | NOTE: This exception should only be used to indicate an Hquery bug.
 {-# LANGUAGE DeriveDataTypeable #-}
 module Text.Hquery.Internal.Error where
 

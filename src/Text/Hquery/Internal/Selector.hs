@@ -1,4 +1,15 @@
-module Text.Hquery.Internal.Selector where
+module Text.Hquery.Internal.Selector (
+  -- * Types
+  AttrMod(..),
+  AttrSel(..),
+  CssSel(..),
+
+  -- * Parsers
+  attrModParser,
+  attrSelParser,
+  cssSelParser,
+  commandParser
+  ) where
 
 import Data.Text
 import Text.Parsec hiding (many, optional, (<|>))
@@ -24,13 +35,13 @@ data CssSel =
   Star
   deriving (Show, Eq)
 
-def = emptyDef{ identStart = letter
-              , identLetter = alphaNum
-              }
-
+m_identifier :: Parser String
+rop :: String -> Parser ()
 TokenParser{ identifier = m_identifier
            , reservedOp = rop
-           } = makeTokenParser def
+           } = makeTokenParser emptyDef{ identStart = letter
+                                       , identLetter = alphaNum
+                                       }
 
 idp :: Parser Text
 idp = pack <$> m_identifier
