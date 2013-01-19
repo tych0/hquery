@@ -1,4 +1,5 @@
-module Hquery.Transform where
+{-# LANGUAGE OverloadedStrings #-}
+module Text.Hquery.Internal.Transform where
 
 import qualified Data.Text as T
 import Data.List
@@ -8,8 +9,8 @@ import Text.XmlHtml.Cursor
 
 import Control.Monad
 
-import Hquery.Error
-import Hquery.Selector
+import Text.Hquery.Internal.Error
+import Text.Hquery.Internal.Selector
 
 buildAttrMod :: AttrSel -> T.Text -> Cursor -> Cursor
 buildAttrMod (AttrSel name attrMod) value cur = do

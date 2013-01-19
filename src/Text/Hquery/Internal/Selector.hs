@@ -1,4 +1,4 @@
-module Hquery.Selector where
+module Text.Hquery.Internal.Selector where
 
 import Data.Text
 import Text.Parsec hiding (many, optional, (<|>))

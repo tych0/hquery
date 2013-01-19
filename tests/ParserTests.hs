@@ -8,9 +8,9 @@ import Test.HUnit hiding (Test)
 import Text.Parsec
 import Text.Parsec.Error
 
-import Hquery
-import Hquery.Selector
-import Hquery.Utils
+import Text.Hquery
+import Text.Hquery.Utils
+import Text.Hquery.Internal.Selector
 
 tests :: [(String, (CssSel, Maybe AttrSel))]
 tests = [ ("div", (Elem "div", Nothing))

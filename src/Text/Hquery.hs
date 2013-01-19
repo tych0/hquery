@@ -1,4 +1,4 @@
-module Hquery where
+module Text.Hquery where
 
 import Data.List
 import Data.Maybe
@@ -7,9 +7,9 @@ import qualified Data.Text as T
 import Text.Parsec
 import Text.XmlHtml
 import Text.XmlHtml.Cursor
-import Hquery.Error
-import Hquery.Selector
-import Hquery.Transform
+import Text.Hquery.Internal.Error
+import Text.Hquery.Internal.Selector
+import Text.Hquery.Internal.Transform
 
 parseSel :: String ->
             (Maybe AttrSel -> Cursor -> Cursor) ->

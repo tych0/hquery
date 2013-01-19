@@ -7,8 +7,8 @@ import Test.Framework ( defaultMain, Test )
 import Test.Framework.Providers.HUnit
 import Test.HUnit hiding (Node, Test)
 
-import Hquery
-import Hquery.Utils
+import Text.Hquery
+import Text.Hquery.Utils
 
 import Text.XmlHtml
 

@@ -1,4 +1,5 @@
-module Hquery.Utils where
+{-# LANGUAGE OverloadedStrings #-}
+module Text.Hquery.Utils where
 
 import qualified Data.Map as Map
 import qualified Data.Set as Set

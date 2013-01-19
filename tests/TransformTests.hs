@@ -12,8 +12,8 @@ import Test.Framework.Providers.HUnit
 
 import System.FilePath
 
-import Hquery
-import Hquery.Utils
+import Text.Hquery
+import Text.Hquery.Utils
 
 data TestException = TestException String deriving (Show, Typeable)
 instance Exception TestException

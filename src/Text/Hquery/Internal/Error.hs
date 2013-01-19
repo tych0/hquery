@@ -1,5 +1,5 @@
 {-# LANGUAGE DeriveDataTypeable #-}
-module Hquery.Error where
+module Text.Hquery.Internal.Error where
 
 import Control.Exception
 import Data.Typeable

@@ -1,3 +1,0 @@
-* use Applicative in parser
-* module reorganization under Text
-* expose things vi a .Internal module
