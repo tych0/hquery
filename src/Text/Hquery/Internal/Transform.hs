@@ -1,3 +1,4 @@
+-- | This module contains all of the actual tree traversal/matching code.
 {-# LANGUAGE OverloadedStrings #-}
 module Text.Hquery.Internal.Transform where
 

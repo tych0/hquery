@@ -1,3 +1,4 @@
+-- | ADTs for representing what node operations to perform, and their parsers.
 module Text.Hquery.Internal.Selector (
   -- * Types
   AttrMod(..),

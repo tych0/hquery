@@ -1,5 +1,49 @@
--- | This module exports the top level constructors used for building node
--- transformations.
+{- | This module exports the top level constructors
+used for building node transformations.
+For example, if your template is
+
+> <div class="person">
+>   <div class="name"></div>
+>   <div class="occupation"></div>
+> </div>
+
+and you invoke hquery like this:
+
+> import Text.Hquery
+> template = ... -- parse your template here
+> people = [ ("Justin Bieber", "Celebrity")
+>          , ("Jens Kidman", "Musician")
+>          ]
+> bindPerson (n, o) = hq ".name *" n . hq ".occupation *" o
+> f = hq ".person *" $ map bindPerson people
+> f template
+
+you'll get markup like this:
+
+> <div class="person">
+>   <div class="name">Justin Bieber</div>
+>   <div class="occupation">Celebrity</div>
+> </div>
+> <div class="person">
+>   <div class="name">Jens Kidman</div>
+>   <div class="occupation">Musician</div>
+> </div>
+
+You can also add, remove, and append to element attributes. For example if we
+have: @ \<div class=\"foo\"\>\</div\> @, below are some example
+transformations:
+
+  * @ hq \"div [class+]\" \"hidden\" @ gives @ \<div class=\"foo hidden\"\>\</div\> @
+
+  * @ hq \".foo [id]\" \"bar\" @ gives @ \<div id=\"bar\" class=\"foo\"\>\</div\> @
+
+  * @ hq \"* [class!]\" \"foo\" @ gives @ \<div\>\</div\> @
+
+This module exports several constructors for common types of node
+transformations. These constructors simply give you back a @ 'Node' -> 'Node'
+@, which you can then apply however you choose.
+-}
+
 module Text.Hquery (
   -- * Constructors
   MakeTransformer(..)

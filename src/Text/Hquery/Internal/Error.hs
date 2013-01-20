@@ -9,5 +9,8 @@ data HqueryInternalException = HqueryInternalException String
   deriving (Show, Typeable)
 instance Exception HqueryInternalException
 
+-- | Unconditionally throw an HqueryInternalException with the specified error
+-- message. This should not be used for user errors, just internal hquery
+-- errors.
 raise :: String -> a
 raise = throw . HqueryInternalException

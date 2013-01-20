@@ -29,6 +29,10 @@ newtype EqNode = EqNode Node deriving Show
 instance Eq (EqNode) where
   (EqNode n1) == (EqNode n2) = nodeEq n1 n2
 
+-- | Test a list of attributes for equality. This has special handling for the
+-- "class" attribute, so that the order in which the classes are applied to the
+-- node doesn't matter. Additionally, the oder of the attributes in either list
+-- is also ignored.
 attrsEq :: [(T.Text, T.Text)] -> [(T.Text, T.Text)] -> Bool
 attrsEq attrs1 attrs2 = do
   let (m1, class1) = mapNoClass attrs1
@@ -45,6 +49,7 @@ attrsEq attrs1 attrs2 = do
       s1 == s2
     classEq _ _ = False
 
+-- | A top level semantic node equality funciton.
 nodeEq :: Node -> Node -> Bool
 nodeEq (TextNode t1) (TextNode t2) = t1 == t2
 nodeEq (Comment t1) (Comment t2) = t1 == t2
