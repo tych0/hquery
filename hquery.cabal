@@ -15,6 +15,10 @@ description: Hquery is a tool for transforming XmlHtml trees. It is an
              "xmlhtml" 'Node's, allowing you to build transformers for creating
              and modifying template trees. See "Text.Hquery" for some examples.
 
+source-repository head
+  type:              git
+  location:          git://github.com/tych0/hquery.git
+
 library
   build-depends: base ==4.5.*, parsec >= 3.1, xmlhtml >= 0.2.0.3,
                  text >= 0.11.2.3, containers >= 0.4.2.1
