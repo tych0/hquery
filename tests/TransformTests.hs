@@ -46,6 +46,7 @@ tests = [ (hq "#foo [class+]" "bar", "AddClass")
         , (peopleTest, "PeopleOccupations")
         , (hq ".foo *" "bar", "NestXform")
         , (hq ".foo" "bar", "NestReplace")
+        , (hq "#foo" ([]::[Node]), "RemoveNode")
         ]
 
 makeTests :: [([Node] -> [Node], String)] -> IO [Test]

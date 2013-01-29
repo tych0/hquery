@@ -117,11 +117,14 @@ replaceCurrent ns c = fromMaybe dflt $ do
     pn@Element { elementChildren = kids } -> do
       ix <- elemIndex curN kids
       let next = setNode (pn { elementChildren = concatMap replaceN kids }) p
-      getChild (ix - 1 + (length ns)) next
+      let childIdx = (ix - 1 + (length ns))
+      -- FIXME: xmlhtml <= 0.2.0.3 crashes on negative indicies
+      return $ fromMaybe next $ if childIdx < 0 then Nothing else getChild childIdx next
     _ -> raise "should be no non-Element parents!"
   where
     curN = current c
     replaceN n2 = if n2 == curN then ns else [n2]
+    -- FIXME: replacing a root node with no elements is the identity
     dflt = fromMaybe c $ do
       newCur <- (fromNodes ns)
       endCur <- findRight isLast newCur
