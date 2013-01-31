@@ -71,6 +71,10 @@ parseSel sel builder = case parse commandParser "" sel of
 class MakeTransformer a where
   hq :: String -> a -> [Node] -> [Node]
 
+instance MakeTransformer a => MakeTransformer (Maybe a) where
+  hq sel Nothing = hq sel ([] :: [Node])
+  hq sel (Just t) = hq sel t
+
 instance MakeTransformer String where
   hq sel target = parseSel sel nodeXform
     where
