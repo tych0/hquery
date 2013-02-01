@@ -46,7 +46,8 @@ transformations. These constructors simply give you back a @ 'Node' -> 'Node'
 
 module Text.Hquery (
   -- * Constructors
-  MakeTransformer(..)
+  MakeTransformer(..),
+  Group(..),
   ) where
 
 import Data.List
@@ -68,6 +69,8 @@ parseSel sel builder = case parse commandParser "" sel of
   Left _ -> id -- TODO: error handling? invalid sel
   Right (css, attr) -> transform css (builder attr)
 
+data Group = Group [Node]
+
 class MakeTransformer a where
   hq :: String -> a -> [Node] -> [Node]
 
@@ -85,10 +88,18 @@ instance MakeTransformer String where
         (Nothing, _) -> (setNode (TextNode (T.pack target))) c
 
 instance MakeTransformer [String] where
-  hq sel xs = hq sel (map (TextNode . T.pack) xs)
+  hq sel xs = hq sel $ map (TextNode . T.pack) xs
 
 instance MakeTransformer Node where
   hq sel target = hq sel [target]
+
+instance MakeTransformer Group where
+  hq sel (Group ns) = parseSel sel groupXform
+    where
+      groupXform attr c = case (attr, current c) of
+        (Just CData, e @ Element {}) -> setNode (e { elementChildren = ns }) c
+        (Just _, _) -> c -- TODO: error handling?
+        (Nothing, _) -> replaceCurrent ns c
 
 instance MakeTransformer ([Node] -> [Node]) where
   hq sel f = hq sel [f]

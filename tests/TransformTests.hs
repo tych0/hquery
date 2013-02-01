@@ -4,6 +4,7 @@ import Control.Exception
 import Data.Typeable
 import Data.Maybe
 import qualified Data.ByteString.Char8 as BS
+import qualified Data.Text as T
 import Test.HUnit hiding (Node, Test)
 import Text.XmlHtml
 
@@ -30,6 +31,11 @@ peopleTest =
 
   in hq ".person" (map bind people)
 
+groupTest :: [Node]
+groupTest = map (mkSpan . T.pack . show) [1..3]
+  where
+    mkSpan s = Element (T.pack "span") [] $ [TextNode s]
+
 tests :: [([Node] -> [Node], String)]
 tests = [ (hq "#foo [class+]" "bar", "AddClass")
         , (hq "div [class+]" "bar", "AddClass")
@@ -47,6 +53,7 @@ tests = [ (hq "#foo [class+]" "bar", "AddClass")
         , (hq ".foo *" "bar", "NestXform")
         , (hq ".foo" "bar", "NestReplace")
         , (hq "#foo" ([]::[Node]), "RemoveNode")
+        , (hq ".foo *" $ Group groupTest, "GroupNodes")
         ]
 
 makeTests :: [([Node] -> [Node], String)] -> IO [Test]
