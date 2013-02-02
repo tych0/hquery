@@ -48,6 +48,11 @@ module Text.Hquery (
   -- * Constructors
   MakeTransformer(..),
   Group(..),
+
+  -- * Values
+  -- | nothing is handy for deleting a node from the tree, you cna replace it
+  -- with nothing, e.g. @ hq \".foo\" nothing @
+  nothing,
   ) where
 
 import Data.List
@@ -68,6 +73,9 @@ parseSel :: String ->
 parseSel sel builder = case parse commandParser "" sel of
   Left _ -> id -- TODO: error handling? invalid sel
   Right (css, attr) -> transform css (builder attr)
+
+nothing :: [Node]
+nothing = []
 
 data Group = Group [Node]
 

@@ -52,7 +52,7 @@ tests = [ (hq "#foo [class+]" "bar", "AddClass")
         , (peopleTest, "PeopleOccupations")
         , (hq ".foo *" "bar", "NestXform")
         , (hq ".foo" "bar", "NestReplace")
-        , (hq "#foo" ([]::[Node]), "RemoveNode")
+        , (hq "#foo" nothing, "RemoveNode")
         , (hq ".foo *" $ Group groupTest, "GroupNodes")
         ]
 
