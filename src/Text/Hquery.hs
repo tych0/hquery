@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 {- | This module exports the top level constructors
 used for building node transformations.
 For example, if your template is
@@ -147,8 +148,9 @@ replaceCurrent ns c = fromMaybe dflt $ do
   where
     curN = current c
     replaceN n2 = if n2 == curN then ns else [n2]
-    -- FIXME: replacing a root node with no elements is the identity
-    dflt = fromMaybe c $ do
+    -- FIXME: replacing a root node with no elements generates a bogus comment
+    empty = fromNode (Comment "FIXME: hquery: replaced root with empty node")
+    dflt = fromMaybe empty $ do
       newCur <- (fromNodes ns)
       endCur <- findRight isLast newCur
       return endCur

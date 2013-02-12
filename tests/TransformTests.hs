@@ -54,6 +54,7 @@ tests = [ (hq "#foo [class+]" "bar", "AddClass")
         , (hq ".foo" "bar", "NestReplace")
         , (hq "#foo" nothing, "RemoveNode")
         , (hq ".foo *" $ Group groupTest, "GroupNodes")
+        , (hq "*" nothing, "RemoveStar")
         ]
 
 makeTests :: [([Node] -> [Node], String)] -> IO [Test]
