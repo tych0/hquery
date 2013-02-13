@@ -32,9 +32,9 @@ peopleTest =
   in hq ".person" (map bind people)
 
 groupTest :: [Node]
-groupTest = map (mkSpan . T.pack . show) [1..3]
-  where
-    mkSpan s = Element (T.pack "span") [] $ [TextNode s]
+groupTest = map (mkSpan . show) [1..3]
+
+mkSpan s = Element (T.pack "span") [] $ [TextNode $ T.pack s]
 
 tests :: [([Node] -> [Node], String)]
 tests = [ (hq "#foo [class+]" "bar", "AddClass")
@@ -55,6 +55,9 @@ tests = [ (hq "#foo [class+]" "bar", "AddClass")
         , (hq "#foo" nothing, "RemoveNode")
         , (hq ".foo *" $ Group groupTest, "GroupNodes")
         , (hq "*" nothing, "RemoveStar")
+        , (hq "li *" $ map (hq "li *") ["a", "b", "c"], "ListOfFs")
+        , (hq "li *" $ map (hq "li *") ["a"], "SingleF")
+        , (hq "div" [mkSpan ""], "ReplaceRoot")
         ]
 
 makeTests :: [([Node] -> [Node], String)] -> IO [Test]

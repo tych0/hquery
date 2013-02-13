@@ -152,5 +152,4 @@ replaceCurrent ns c = fromMaybe dflt $ do
     empty = fromNode (Comment "FIXME: hquery: replaced root with empty node")
     dflt = fromMaybe empty $ do
       newCur <- (fromNodes ns)
-      endCur <- findRight isLast newCur
-      return endCur
+      return (fromMaybe newCur $ findRight isLast newCur)
