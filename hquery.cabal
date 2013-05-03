@@ -1,5 +1,5 @@
 name:                hquery
-version:             0.1.0.2
+version:             0.1.0.3
 synopsis:            A query language for transforming HTML5
 license:             MIT
 license-file:        LICENSE
