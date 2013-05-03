@@ -8,8 +8,6 @@ import Data.Maybe
 import Text.XmlHtml
 import Text.XmlHtml.Cursor
 
-import Control.Monad
-
 import Text.Hquery.Internal.Error
 import Text.Hquery.Internal.Selector
 
@@ -43,18 +41,23 @@ buildAttrMod (AttrSel name attrMod) value cur = do
   modifyNode f cur
 buildAttrMod CData _ _ = (raise "shouldn't be attr-modding a CData")
 
-transform :: CssSel -> (Cursor -> Cursor) -> [Node] -> [Node]
-transform sel f roots =
-  fromMaybe [] $ liftM (\c -> topNodes (transformR c)) (fromNodes roots)
+transform :: CssSel -> (Cursor -> Maybe Cursor) -> [Node] -> [Node]
+transform sel f roots = fromMaybe [] $ do
+  cur <- fromNodes roots
+  transformed <- transformR cur
+  return $ topNodes transformed
   where
-    transformR cur = do
+    transformR cur =
       let result = process cur
-      maybe result transformR (nextDF result)
+      in maybe result transformR $ do
+         r <- result
+         next <- nextDF r
+         return next
     process cur = do
       let node = current cur
       let matchAttr attr pred_ = case getAttribute attr node of
                                    Just value | pred_ value -> f cur
-                                   _ -> cur
+                                   _ -> Just cur
       case sel of
         Id name -> matchAttr "id" ((==) name)
         Name name -> matchAttr "name" ((==) name)
@@ -63,5 +66,5 @@ transform sel f roots =
         Elem name ->
           case tagName node of
             Just id_ | id_ == name -> f cur
-            _ -> cur
+            _ -> Just cur
         Star -> f cur

@@ -68,7 +68,7 @@ import Text.Hquery.Internal.Selector
 import Text.Hquery.Internal.Transform
 
 parseSel :: String ->
-            (Maybe AttrSel -> Cursor -> Cursor) ->
+            (Maybe AttrSel -> Cursor -> Maybe Cursor) ->
             [Node] ->
             [Node]
 parseSel sel builder = case parse commandParser "" sel of
@@ -91,10 +91,10 @@ instance MakeTransformer String where
   hq sel target = parseSel sel nodeXform
     where
       nodeXform attr c = case (attr, current c) of
-        (Just CData, e @ Element {}) -> setNode (e { elementChildren = [TextNode (T.pack target)] }) c
+        (Just CData, e @ Element {}) -> Just $ setNode (e { elementChildren = [TextNode (T.pack target)] }) c
         -- the non-Element case isn't relevant here, since we can't match non-Elements
-        (Just s, _) -> buildAttrMod s (T.pack target) c
-        (Nothing, _) -> (setNode (TextNode (T.pack target))) c
+        (Just s, _) -> Just $ buildAttrMod s (T.pack target) c
+        (Nothing, _) -> Just $ (setNode (TextNode (T.pack target))) c
 
 instance MakeTransformer [String] where
   hq sel xs = hq sel $ map (TextNode . T.pack) xs
@@ -106,8 +106,8 @@ instance MakeTransformer Group where
   hq sel (Group ns) = parseSel sel groupXform
     where
       groupXform attr c = case (attr, current c) of
-        (Just CData, e @ Element {}) -> setNode (e { elementChildren = ns }) c
-        (Just _, _) -> c -- TODO: error handling?
+        (Just CData, e @ Element {}) -> Just $ setNode (e { elementChildren = ns }) c
+        (Just _, _) -> Just c -- TODO: error handling?
         (Nothing, _) -> replaceCurrent ns c
 
 instance MakeTransformer ([Node] -> [Node]) where
@@ -124,9 +124,9 @@ instance MakeTransformer [Node] where
   hq sel ns = parseSel sel buildNodesXform
     where
       buildNodesXform (Just CData) = replicateNode
-      buildNodesXform (Just _) = id -- TODO: error handling? can't insert nodes in an attr
-      buildNodesXform Nothing = replaceCurrent(ns)
-      replicateNode :: Cursor -> Cursor
+      buildNodesXform (Just _) = Just -- TODO: error handling? can't insert nodes in an attr
+      buildNodesXform Nothing = replaceCurrent ns
+      replicateNode :: Cursor -> Maybe Cursor
       replicateNode c = let n = (current c) in
         case n of
           e @ Element {} ->
@@ -134,7 +134,7 @@ instance MakeTransformer [Node] where
             in replaceCurrent replicated c
           _ -> raise "bug: shouldn't be replicating on a non-Element node"
 
-replaceCurrent :: [Node] -> Cursor -> Cursor
+replaceCurrent :: [Node] -> Cursor -> Maybe Cursor
 replaceCurrent ns c = fromMaybe dflt $ do
   p <- parent c
   case current p of
@@ -142,13 +142,11 @@ replaceCurrent ns c = fromMaybe dflt $ do
       ix <- elemIndex curN kids
       let next = setNode (pn { elementChildren = concatMap replaceN kids }) p
       let childIdx = (ix - 1 + (length ns))
-      return $ fromMaybe next $ getChild childIdx next
+      return $ Just $ fromMaybe next $ getChild childIdx next
     _ -> raise "should be no non-Element parents!"
   where
     curN = current c
     replaceN n2 = if n2 == curN then ns else [n2]
-    -- FIXME: replacing a root node with no elements generates a bogus comment
-    empty = fromNode (Comment "FIXME: hquery: replaced root with empty node")
-    dflt = fromMaybe empty $ do
+    dflt = do
       newCur <- (fromNodes ns)
       return (fromMaybe newCur $ findRight isLast newCur)
