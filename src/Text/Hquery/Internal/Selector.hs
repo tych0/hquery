@@ -60,6 +60,7 @@ attrSelParser = optionMaybe selParser
     selParser =
           AttrSel <$> (rop "[" *> idp) <*> attrModParser <* rop "]"
       <|> CData <$ rop "*"
+      <|> Append <$ rop "+"
 
 cssSelParser :: Parser CssSel
 cssSelParser = Class <$> (rop "." *> idp)

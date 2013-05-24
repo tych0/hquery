@@ -94,8 +94,8 @@ instance MakeTransformer String where
       packed = T.pack target
       n = TextNode packed
       nodeXform attr = Just . case attr of
-        Just Append -> mapChildren (++ [n])
         Just (AttrSel t m) -> buildAttrMod t m (T.pack target)
+        Just Append -> mapChildren (++ [n])
         Just CData -> mapChildren (const [n])
         Nothing -> setNode (TextNode packed)
 
@@ -127,7 +127,8 @@ instance MakeTransformer [Node] where
   hq sel ns = parseSel sel buildNodesXform
     where
       buildNodesXform (Just CData) = replicateNode
-      buildNodesXform (Just _) = Just -- TODO: error handling? can't insert nodes in an attr
+      buildNodesXform (Just Append) = Just . mapChildren (++ ns)
+      buildNodesXform (Just (AttrSel _ _)) = Just -- TODO: error handling? can't insert nodes in an attr
       buildNodesXform Nothing = replaceCurrent ns
       replicateNode :: Cursor -> Maybe Cursor
       replicateNode c = let n = (current c) in

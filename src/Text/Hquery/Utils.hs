@@ -17,6 +17,7 @@ module Text.Hquery.Utils (
 
   -- ** Utility
   stripWhitespaceNodes,
+  flattenTextNodes,
   mapChildren
   ) where
 
@@ -79,6 +80,19 @@ stripWhitespaceNodes (TextNode t1) | T.null (T.strip (t1)) = Nothing
 stripWhitespaceNodes e @ Element { elementChildren = kids } =
   Just (e { elementChildren = mapMaybe stripWhitespaceNodes kids })
 stripWhitespaceNodes x = Just x
+
+flattenTextNodes :: [Node] -> [Node]
+flattenTextNodes = foldr appendElts []
+  where
+    appendElts :: Node -> [Node] -> [Node]
+    appendElts (TextNode last) (TextNode prev : rest) =
+      TextNode (last ++ prev) : rest
+    appendElts n ns = n : ns
+    flattenElement :: Node -> Node
+    flattenElement e @ Element { elementChildren = kids } =
+      e { elementChildren = flattenTextNodes kids }
+    flattenElement = id
+
 
 mapChildren :: ([Node] -> [Node]) -> Cursor -> Cursor
 mapChildren f c =
