@@ -85,16 +85,19 @@ class MakeTransformer a where
   hq :: String -> a -> [Node] -> [Node]
 
 instance MakeTransformer a => MakeTransformer (Maybe a) where
-  hq sel Nothing = hq sel ([] :: [Node])
+  hq sel Nothing = hq sel nothing
   hq sel (Just t) = hq sel t
 
 instance MakeTransformer String where
   hq sel target = parseSel sel nodeXform
     where
-      ns = [TextNode (T.pack target)]
+      packed = T.pack target
+      n = TextNode packed
       nodeXform attr = Just . case attr of
-        Just Append -> mapChildren (++ ns)
-        _ -> mapChildren (\_ -> ns)
+        Just Append -> mapChildren (++ [n])
+        Just (AttrSel t m) -> buildAttrMod t m (T.pack target)
+        Just CData -> mapChildren (const [n])
+        Nothing -> setNode (TextNode packed)
 
 instance MakeTransformer [String] where
   hq sel = hq sel . map (TextNode . T.pack)
