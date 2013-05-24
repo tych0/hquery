@@ -34,10 +34,10 @@ buildAttrMod (AttrSel name attrMod) value cur = do
                 then remove
                 else setAttribute name result
             Remove -> remove
-            Append | name == "class" -> do
+            AppendAttr | name == "class" -> do
               let classes = value : (T.words att)
               setAttribute name (T.unwords classes)
-            Append -> setAttribute name (T.append att value)
+            AppendAttr -> setAttribute name (T.append att value)
   modifyNode f cur
 buildAttrMod CData _ _ = (raise "shouldn't be attr-modding a CData")
 

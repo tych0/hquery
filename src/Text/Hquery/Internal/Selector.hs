@@ -20,11 +20,12 @@ import Text.Parsec.Language
 
 import Control.Applicative
 
-data AttrMod = Remove | Append | Set deriving (Show, Eq)
+data AttrMod = Remove | AppendAttr | Set deriving (Show, Eq)
 
 data AttrSel =
   AttrSel Text AttrMod |
-  CData
+  CData |
+  Append
   deriving (Show, Eq)
 
 data CssSel =
@@ -49,7 +50,7 @@ idp = pack <$> m_identifier
 
 attrModParser :: Parser AttrMod
 attrModParser = option Set $
-      (Append <$ rop "+")
+      (AppendAttr <$ rop "+")
   <|> (Remove <$ rop "!")
 
 attrSelParser :: Parser (Maybe AttrSel)

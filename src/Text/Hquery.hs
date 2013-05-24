@@ -66,6 +66,7 @@ import Text.XmlHtml.Cursor
 import Text.Hquery.Internal.Error
 import Text.Hquery.Internal.Selector
 import Text.Hquery.Internal.Transform
+import Text.Hquery.Utils
 
 parseSel :: String ->
             (Maybe AttrSel -> Cursor -> Maybe Cursor) ->
@@ -90,11 +91,10 @@ instance MakeTransformer a => MakeTransformer (Maybe a) where
 instance MakeTransformer String where
   hq sel target = parseSel sel nodeXform
     where
-      nodeXform attr c = case (attr, current c) of
-        (Just CData, e @ Element {}) -> Just $ setNode (e { elementChildren = [TextNode (T.pack target)] }) c
-        -- the non-Element case isn't relevant here, since we can't match non-Elements
-        (Just s, _) -> Just $ buildAttrMod s (T.pack target) c
-        (Nothing, _) -> Just $ (setNode (TextNode (T.pack target))) c
+      ns = [TextNode (T.pack target)]
+      nodeXform attr = Just . case attr of
+        Just Append -> mapChildren (++ ns)
+        _ -> mapChildren (\_ -> ns)
 
 instance MakeTransformer [String] where
   hq sel = hq sel . map (TextNode . T.pack)
