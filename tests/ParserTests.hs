@@ -16,7 +16,7 @@ tests :: [(String, (CssSel, Maybe AttrSel))]
 tests = [ ("div", (Elem "div", Nothing))
         , (".elt", (Class "elt", Nothing))
         , (".elt *", (Class "elt", Just CData))
-        , (".elt [class+]", (Class "elt", Just $ AttrSel "class" Append))
+        , (".elt [class+]", (Class "elt", Just $ AttrSel "class" AppendAttr))
         , (".elt [class]", (Class "elt", Just $ AttrSel "class" Set))
         ]
 

@@ -58,6 +58,7 @@ tests = [ (hq "#foo [class+]" "bar", "AddClass")
         , (hq "li *" $ map (hq "li *") ["a", "b", "c"], "ListOfFs")
         , (hq "li *" $ map (hq "li *") ["a"], "SingleF")
         , (hq "div" [mkSpan ""], "ReplaceRoot")
+        , (hq "#foo +" " Slim Shady", "AppendContent")
         ]
 
 makeTests :: [([Node] -> [Node], String)] -> IO [Test]
@@ -77,7 +78,8 @@ makeTests xs = mapM makeTest xs
       let expected = comparable parsedExp
       return (testCase testName (assertEqual testName expected result))
       where
-        comparable ns = map EqNode $ catMaybes (map stripWhitespaceNodes ns)
+        comparable ns = map EqNode $
+          (flattenTextNodes . catMaybes) (map stripWhitespaceNodes ns)
         docToNode doc = case doc of
                           HtmlDocument { docContent = content } -> content
                           _ -> throw (TestException (testName ++ "'s inp/exp is not a single node" ++ show doc))

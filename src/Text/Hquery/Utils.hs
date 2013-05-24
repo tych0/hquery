@@ -16,14 +16,18 @@ module Text.Hquery.Utils (
   nodeEq,
 
   -- ** Utility
-  stripWhitespaceNodes
+  stripWhitespaceNodes,
+  flattenTextNodes,
+  mapChildren
   ) where
 
 import qualified Data.Map as Map
 import qualified Data.Set as Set
 import qualified Data.Text as T
 import Text.XmlHtml
+import Text.XmlHtml.Cursor
 import Data.Maybe
+
 
 newtype EqNode = EqNode Node deriving Show
 instance Eq (EqNode) where
@@ -76,3 +80,19 @@ stripWhitespaceNodes (TextNode t1) | T.null (T.strip (t1)) = Nothing
 stripWhitespaceNodes e @ Element { elementChildren = kids } =
   Just (e { elementChildren = mapMaybe stripWhitespaceNodes kids })
 stripWhitespaceNodes x = Just x
+
+flattenTextNodes :: [Node] -> [Node]
+flattenTextNodes = foldr appendElts []
+  where
+    appendElts :: Node -> [Node] -> [Node]
+    appendElts (TextNode l) (TextNode prev : rest) =
+      (TextNode (T.append l prev)) : rest
+    appendElts e @ Element { elementChildren = kids } ns =
+      e { elementChildren = flattenTextNodes kids } : ns
+    appendElts comment ns = comment : ns
+
+mapChildren :: ([Node] -> [Node]) -> Cursor -> Cursor
+mapChildren f c =
+  case current c of
+    e @ Element { elementChildren = kids } -> setNode (e { elementChildren = f kids }) c
+    _ -> c

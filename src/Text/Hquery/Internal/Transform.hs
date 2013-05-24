@@ -8,11 +8,10 @@ import Data.Maybe
 import Text.XmlHtml
 import Text.XmlHtml.Cursor
 
-import Text.Hquery.Internal.Error
 import Text.Hquery.Internal.Selector
 
-buildAttrMod :: AttrSel -> T.Text -> Cursor -> Cursor
-buildAttrMod (AttrSel name attrMod) value cur = do
+buildAttrMod :: T.Text -> AttrMod -> T.Text -> Cursor -> Cursor
+buildAttrMod name attrMod value cur = do
   let att = maybe "" id (getAttribute name (current cur))
   let remove n = case n of
                  Element { elementTag = tag
@@ -34,12 +33,11 @@ buildAttrMod (AttrSel name attrMod) value cur = do
                 then remove
                 else setAttribute name result
             Remove -> remove
-            Append | name == "class" -> do
+            AppendAttr | name == "class" -> do
               let classes = value : (T.words att)
               setAttribute name (T.unwords classes)
-            Append -> setAttribute name (T.append att value)
+            AppendAttr -> setAttribute name (T.append att value)
   modifyNode f cur
-buildAttrMod CData _ _ = (raise "shouldn't be attr-modding a CData")
 
 transform :: CssSel -> (Cursor -> Maybe Cursor) -> [Node] -> [Node]
 transform sel f roots = fromMaybe [] $ do
