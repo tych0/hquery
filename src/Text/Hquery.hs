@@ -97,7 +97,7 @@ instance MakeTransformer String where
         (Nothing, _) -> Just $ (setNode (TextNode (T.pack target))) c
 
 instance MakeTransformer [String] where
-  hq sel xs = hq sel $ map (TextNode . T.pack) xs
+  hq sel = hq sel . map (TextNode . T.pack)
 
 instance MakeTransformer Node where
   hq sel target = hq sel [target]
