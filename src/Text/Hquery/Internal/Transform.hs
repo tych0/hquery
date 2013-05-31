@@ -1,5 +1,5 @@
 -- | This module contains all of the actual tree traversal/matching code.
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, DoAndIfThenElse #-}
 module Text.Hquery.Internal.Transform where
 
 import qualified Data.Text as T
@@ -51,18 +51,24 @@ transform sel f roots = fromMaybe [] $ do
          r <- result
          next <- nextDF r
          return next
-    process cur = do
-      let node = current cur
-      let matchAttr attr pred_ = case getAttribute attr node of
-                                   Just value | pred_ value -> f cur
-                                   _ -> Just cur
-      case sel of
-        Id name -> matchAttr "id" ((==) name)
-        Name name -> matchAttr "name" ((==) name)
-        Class name -> matchAttr "class" (\x -> isInfixOf [name] (T.words x))
-        Attr key value -> matchAttr key ((==) value)
-        Elem name ->
-          case tagName node of
-            Just id_ | id_ == name -> f cur
-            _ -> Just cur
-        Star -> f cur
+    process cur = if selMatches sel (current cur) then f cur else Just cur
+
+transformMatchable :: Matchable -> (Cursor -> Maybe Cursor) -> [Node] -> [Node]
+transformMatchable (Sel sel) f roots = transform sel f roots
+transformMatchable (RSel sel m) f roots = fromMaybe [] $ do
+  cur <- fromNodes roots
+  return $ if selMatches sel (current cur)
+           then transformMatchable m f roots
+           else topNodes cur
+
+selMatches :: CssSel -> Node -> Bool
+selMatches (Id name) n | matchAttr ((==) name) "id" n = True
+selMatches (Name name) n | matchAttr ((==) name) "name" n = True
+selMatches (Class name) n | matchAttr (isInfixOf [name] . T.words) "class" n = True
+selMatches (Attr key value) n | matchAttr ((==) value) key n = True
+selMatches (Elem name) n | maybe False ((==) name) (tagName n) = True
+selMatches Star _ = True
+selMatches _ _ = False
+
+matchAttr :: (T.Text -> Bool) -> T.Text -> Node -> Bool
+matchAttr pred_ name = maybe False pred_ . getAttribute name

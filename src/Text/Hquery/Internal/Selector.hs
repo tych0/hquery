@@ -4,6 +4,7 @@ module Text.Hquery.Internal.Selector (
   AttrMod(..),
   AttrSel(..),
   CssSel(..),
+  Matchable(..),
 
   -- * Parsers
   attrModParser,
@@ -71,3 +72,8 @@ cssSelParser = Class <$> (rop "." *> idp)
 
 commandParser :: Parser (CssSel, Maybe AttrSel)
 commandParser = (,) <$> (cssSelParser <* spaces) <*> attrSelParser
+
+data Matchable =
+  Sel CssSel |
+  RSel CssSel Matchable
+  deriving (Show, Eq)
