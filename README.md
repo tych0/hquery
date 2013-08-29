@@ -5,6 +5,9 @@ syntax to jquery, hence the name). This enables easy manipulation and content
 generation from html templates. If you're familiar with [Lift's][1]
 [CssSel][2]s, this is basically an implementation of those in haskell.
 
+[![Build Status](https://travis-ci.org/tych0/hquery.png)](https://travis-ci.org/tych0/hquery)
+
+
 # Examples
 
 Suppose you have the template:
