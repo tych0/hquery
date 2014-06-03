@@ -94,10 +94,10 @@ instance MakeTransformer String where
       packed = T.pack target
       n = TextNode packed
       nodeXform attr = Just . case attr of
-        Just (AttrSel t m) -> buildAttrMod t m (T.pack target)
+        Just (AttrSel t m) -> buildAttrMod t m packed
         Just Append -> mapChildren (++ [n])
         Just CData -> mapChildren (const [n])
-        Nothing -> setNode (TextNode packed)
+        Nothing -> setNode n
 
 instance MakeTransformer [String] where
   hq sel = hq sel . map (TextNode . T.pack)

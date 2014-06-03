@@ -59,6 +59,9 @@ tests = [ (hq "#foo [class+]" "bar", "AddClass")
         , (hq "li *" $ map (hq "li *") ["a"], "SingleF")
         , (hq "div" [mkSpan ""], "ReplaceRoot")
         , (hq "#foo +" " Slim Shady", "AppendContent")
+        , (  (hq "* +" "appended") . (hq ".tag *" "theTag")
+          , "TagAppend"
+          )
         ]
 
 makeTests :: [([Node] -> [Node], String)] -> IO [Test]
